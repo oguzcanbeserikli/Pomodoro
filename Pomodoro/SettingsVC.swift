@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol SliderValueChangedDelegate {
+    func didValueChanged(focusTime: Int, breakTime: Int )
+}
+
 class SettingsVC: UIViewController {
     
     let focusValueLabel: UILabel = {
@@ -19,16 +23,19 @@ class SettingsVC: UIViewController {
     
     let focusSlider: UISlider = {
         let slider = UISlider()
-        slider.minimumValue = 5
-        slider.maximumValue = 60
+        slider.minimumValue = 1
+        slider.maximumValue = 30
         slider.value = 25
         slider.addTarget(self, action: #selector(focusSliderChanged(_:)), for: .valueChanged)
+        slider.minimumTrackTintColor = .systemRed
         return slider
     }()
     
     @objc func focusSliderChanged(_ sender: UISlider) {
         let focusTime = Int(sender.value) // Get the value from the slider
+        let breakTime = Int(breakSlider.value)
         focusValueLabel.text = "Focus Time: \(focusTime) min"
+        delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime)
     }
     
     let breakValueLabel: UILabel = {
@@ -45,17 +52,29 @@ class SettingsVC: UIViewController {
         slider.maximumValue = 20
         slider.value = 5
         slider.addTarget(self, action: #selector(breakSliderChanged(_:)), for: .valueChanged)
+        slider.minimumTrackTintColor = .systemGreen
         return slider
     }()
     
     @objc func breakSliderChanged(_ sender: UISlider) {
         let breakTime = Int(sender.value) // Get the value from the slide
+        let focusTime = Int(focusSlider.value)
         breakValueLabel.text = "Break Time: \(breakTime) min"
+        delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime)
     }
+    
+    var delegate: SliderValueChangedDelegate?
+    var currentFocusTime: Int = 25
+    var currentBreakTime: Int = 5
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        
+        focusSlider.value = Float(currentFocusTime)
+        focusValueLabel.text = "Focus Time: \(currentFocusTime) min"
+        breakSlider.value = Float(currentBreakTime)
+        breakValueLabel.text = "Break Time: \(currentBreakTime) min"
         
         focusSlider.addTarget(self, action: #selector(focusSliderChanged(_:)), for: .valueChanged)
         breakSlider.addTarget(self, action: #selector(breakSliderChanged(_:)), for: .valueChanged)

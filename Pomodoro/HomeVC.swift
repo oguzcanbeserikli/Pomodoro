@@ -7,8 +7,7 @@
 
 import UIKit
 
-class HomeVC: UIViewController {
-    
+class HomeVC: UIViewController, SliderValueChangedDelegate {
     let circularProgressView = CircularProgressView()
     
     let timerLabel: UILabel = {
@@ -82,16 +81,29 @@ class HomeVC: UIViewController {
     
     var timer: Timer?
     var isFocusTime = true
-    var timeRemaining = 25*60 // Default focus time in seconds
-    var focusTime = 25*60 // Default focus time (to be dynamically set)
-    var breakTime = 5 * 60 // Default break time (to be dynamically set)
+    var timeRemaining = 25*60
+    var focusTime = 25*60
+    var breakTime = 5 * 60
     
+    func didValueChanged(focusTime: Int, breakTime: Int) {
+        self.focusTime = focusTime * 60
+        self.breakTime = breakTime * 60
+        
+        if isFocusTime {
+            timeRemaining = self.focusTime
+        } else {
+            timeRemaining = self.breakTime
+        }
+        
+        updateTimerLabel()
+    }
+   
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         updateCircularProgressView()
         pauseButton.isHidden = true
-        resetButton.isHidden = true 
+        resetButton.isHidden = true
     }
     
     func setupTitle() {
@@ -107,6 +119,9 @@ class HomeVC: UIViewController {
     
     @objc func settingsButtonTapped() {
         let settingsVC = SettingsVC()
+        settingsVC.delegate = self
+        settingsVC.currentFocusTime = focusTime / 60
+        settingsVC.currentBreakTime = breakTime / 60
         navigationController?.pushViewController(settingsVC, animated: true)
     }
     
