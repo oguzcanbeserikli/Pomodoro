@@ -8,10 +8,12 @@
 import UIKit
 
 protocol SliderValueChangedDelegate {
-    func didValueChanged(focusTime: Int, breakTime: Int )
+    func didValueChanged(focusTime: Int, breakTime: Int, longBreakTime: Int)
 }
 
 class SettingsVC: UIViewController {
+    var isPomodoroOn: Bool!
+
     
     let focusValueLabel: UILabel = {
         let label = UILabel()
@@ -21,23 +23,6 @@ class SettingsVC: UIViewController {
         return label
     }()
     
-    let focusSlider: UISlider = {
-        let slider = UISlider()
-        slider.minimumValue = 1
-        slider.maximumValue = 30
-        slider.value = 25
-        slider.addTarget(self, action: #selector(focusSliderChanged(_:)), for: .valueChanged)
-        slider.minimumTrackTintColor = .systemRed
-        return slider
-    }()
-    
-    @objc func focusSliderChanged(_ sender: UISlider) {
-        let focusTime = Int(sender.value) // Get the value from the slider
-        let breakTime = Int(breakSlider.value)
-        focusValueLabel.text = "Focus Time: \(focusTime) min"
-        delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime)
-    }
-    
     let breakValueLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
@@ -46,26 +31,45 @@ class SettingsVC: UIViewController {
         return label
     }()
     
+    let longBreakValueLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.text = "Long Break Time: 20 min"
+        label.textColor = .systemBlue
+        return label
+    }()
+    
+    let focusSlider: UISlider = {
+        let slider = UISlider()
+        slider.minimumValue = 15
+        slider.maximumValue = 30
+        slider.addTarget(self, action: #selector(focusSliderChanged(_:)), for: .valueChanged)
+        slider.minimumTrackTintColor = .systemRed
+        return slider
+    }()
+    
     let breakSlider: UISlider = {
         let slider = UISlider()
-        slider.minimumValue = 1
-        slider.maximumValue = 20
-        slider.value = 5
+        slider.minimumValue = 5
+        slider.maximumValue = 15
         slider.addTarget(self, action: #selector(breakSliderChanged(_:)), for: .valueChanged)
         slider.minimumTrackTintColor = .systemGreen
         return slider
     }()
     
-    @objc func breakSliderChanged(_ sender: UISlider) {
-        let breakTime = Int(sender.value) // Get the value from the slide
-        let focusTime = Int(focusSlider.value)
-        breakValueLabel.text = "Break Time: \(breakTime) min"
-        delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime)
-    }
+    let longBreakSlider: UISlider = {
+        let slider = UISlider()
+        slider.minimumValue = 15
+        slider.maximumValue = 30
+        slider.addTarget(self, action: #selector(longBreakSliderChanged(_:)), for: .valueChanged)
+        slider.minimumTrackTintColor = .systemBlue
+        return slider
+    }()
     
     var delegate: SliderValueChangedDelegate?
     var currentFocusTime: Int = 25
-    var currentBreakTime: Int = 5
+    var currentBreakTime: Int = 10
+    var currentLongBreakTime: Int = 20
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -73,26 +77,39 @@ class SettingsVC: UIViewController {
         
         focusSlider.value = Float(currentFocusTime)
         focusValueLabel.text = "Focus Time: \(currentFocusTime) min"
+        
         breakSlider.value = Float(currentBreakTime)
         breakValueLabel.text = "Break Time: \(currentBreakTime) min"
         
+        longBreakSlider.value = Float(currentLongBreakTime)
+        longBreakValueLabel.text = "Long Break Time: \(currentLongBreakTime) min"
+        
         focusSlider.addTarget(self, action: #selector(focusSliderChanged(_:)), for: .valueChanged)
         breakSlider.addTarget(self, action: #selector(breakSliderChanged(_:)), for: .valueChanged)
+        longBreakSlider.addTarget(self, action: #selector(longBreakSliderChanged(_:)), for: .valueChanged)
+        
+        focusSlider.isEnabled = !isPomodoroOn
+        breakSlider.isEnabled = !isPomodoroOn
+        longBreakSlider.isEnabled = !isPomodoroOn
     }
     
     func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = .black
         title = "Settings"
         
         focusSlider.translatesAutoresizingMaskIntoConstraints = false
         breakSlider.translatesAutoresizingMaskIntoConstraints = false
+        longBreakSlider.translatesAutoresizingMaskIntoConstraints = false
         focusValueLabel.translatesAutoresizingMaskIntoConstraints = false
         breakValueLabel.translatesAutoresizingMaskIntoConstraints = false
+        longBreakValueLabel.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(focusSlider)
         view.addSubview(breakSlider)
+        view.addSubview(longBreakSlider)
         view.addSubview(focusValueLabel)
         view.addSubview(breakValueLabel)
+        view.addSubview(longBreakValueLabel)
         
         NSLayoutConstraint.activate([
             focusSlider.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -107,8 +124,38 @@ class SettingsVC: UIViewController {
             breakSlider.widthAnchor.constraint(equalToConstant: 250),
             
             breakValueLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            breakValueLabel.topAnchor.constraint(equalTo: breakSlider.bottomAnchor, constant: 20)
+            breakValueLabel.topAnchor.constraint(equalTo: breakSlider.bottomAnchor, constant: 20),
+            
+            longBreakSlider.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            longBreakSlider.topAnchor.constraint(equalTo: breakValueLabel.bottomAnchor, constant: 50),
+            longBreakSlider.widthAnchor.constraint(equalToConstant: 250),
+            
+            longBreakValueLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            longBreakValueLabel.topAnchor.constraint(equalTo: longBreakSlider.bottomAnchor, constant: 20)
         ])
-        
+    }
+    
+    @objc func focusSliderChanged(_ sender: UISlider) {
+        let focusTime = Int(sender.value) // Get the value from the slider
+        let breakTime = Int(breakSlider.value)
+        let longBreakTime = Int(longBreakSlider.value)
+        focusValueLabel.text = "Focus Time: \(focusTime) min"
+        delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime, longBreakTime: longBreakTime)
+    }
+    
+    @objc func breakSliderChanged(_ sender: UISlider) {
+        let breakTime = Int(sender.value) // Get the value from the slide
+        let focusTime = Int(focusSlider.value)
+        let longBreakTime = Int(longBreakSlider.value)
+        breakValueLabel.text = "Break Time: \(breakTime) min"
+        delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime, longBreakTime: longBreakTime)
+    }
+    
+    @objc func longBreakSliderChanged(_ sender: UISlider) {
+        let longBreakTime = Int(sender.value)
+        let focusTime = Int(focusSlider.value)
+        let breakTime = Int(breakSlider.value)
+        longBreakValueLabel.text = "Long Break Time: \(longBreakTime) min"
+        delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime, longBreakTime: longBreakTime)
     }
 }

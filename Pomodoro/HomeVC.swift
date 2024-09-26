@@ -15,7 +15,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 36)
         label.text = "25:00"
-        label.textColor = .black
+        label.textColor = .white
         return label
     }()
     
@@ -32,7 +32,6 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         let button = UIButton()
         button.setTitle("Start", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-        button.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
         button.setTitleColor(.systemRed, for: .normal)
         return button
     }()
@@ -42,13 +41,13 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         pauseButton.isHidden = false
         resetButton.isHidden = false
         startTimer()
+        isPomodoroOn = true
     }
     
     let pauseButton: UIButton = {
         let button = UIButton()
         button.setTitle("Pause", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-        button.addTarget(self, action: #selector(pauseButtonTapped), for: .touchUpInside)
         button.setTitleColor(.systemRed, for: .normal)
         return button
     }()
@@ -64,51 +63,55 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         let button = UIButton()
         button.setTitle("Reset", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-        button.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
         button.setTitleColor(.systemRed, for: .normal)
         return button
     }()
     
     @objc func resetButtonTapped() {
-        timer?.invalidate() // Stop the timer
-        timeRemaining = isFocusTime ? focusTime : breakTime // Reset time
-        updateTimerLabel()
-        startButton.setTitle("Start", for: .normal)
-        startButton.isHidden = false
-        pauseButton.isHidden = true
-        resetButton.isHidden = true
+        resetTimer()
     }
     
     var timer: Timer?
-    var isFocusTime = true
-    var timeRemaining = 25*60
-    var focusTime = 25*60
-    var breakTime = 5 * 60
+    var timerState: TimerState = .focus
+    var timeRemaining = 25 * 60
+    var focusTime = 25 * 60
+    var breakTime = 10 * 60
+    var longBreakTime = 20 * 60
+    var cycleCount = 0
+    var isPomodoroOn = false
     
-    func didValueChanged(focusTime: Int, breakTime: Int) {
+    func didValueChanged(focusTime: Int, breakTime: Int, longBreakTime: Int) {
         self.focusTime = focusTime * 60
         self.breakTime = breakTime * 60
+        self.longBreakTime = longBreakTime * 60
         
-        if isFocusTime {
-            timeRemaining = self.focusTime
-        } else {
-            timeRemaining = self.breakTime
+        switch timerState {
+        case .focus:
+            timeRemaining  = self.focusTime
+        case .break:
+            timeRemaining  = self.breakTime
+        case .longBreak:
+            timeRemaining  = self.longBreakTime
         }
         
         updateTimerLabel()
     }
-   
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         updateCircularProgressView()
         pauseButton.isHidden = true
         resetButton.isHidden = true
+        
+        startButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
+        pauseButton.addTarget(self, action: #selector(pauseButtonTapped), for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
     }
     
     func setupTitle() {
         self.title = "Focus Cycle"
-        self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+        self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.red]
     }
     
     func createRightBarButtonItem() {
@@ -122,11 +125,13 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         settingsVC.delegate = self
         settingsVC.currentFocusTime = focusTime / 60
         settingsVC.currentBreakTime = breakTime / 60
+        settingsVC.currentLongBreakTime = longBreakTime / 60
+        settingsVC.isPomodoroOn = isPomodoroOn
         navigationController?.pushViewController(settingsVC, animated: true)
     }
     
     func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = .black
         setupTitle()
         createRightBarButtonItem()
         
@@ -166,21 +171,59 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         ])
     }
     
+    func resetTimer() {
+        timer?.invalidate()
+        timerState = .focus
+        cycleCount = 0
+        timeRemaining = focusTime
+        updateCircularProgressView()
+        startButton.setTitle("Start", for: .normal)
+        startButton.isHidden = false
+        pauseButton.isHidden = true
+        resetButton.isHidden = true
+        isPomodoroOn = false
+    }
+    
     func updateCircularProgressView() {
-        circularProgressView.updateStrokeColor(isFocusTime: isFocusTime)
-        statusLabel.text = isFocusTime ? "Focus Time" : "Break Time"
+        circularProgressView.updateStrokeColor(for: timerState)
+        switch timerState {
+        case .focus:
+            statusLabel.text = "Focus Time"
+            statusLabel.textColor = .systemRed
+        case .break:
+            statusLabel.text = "Break Time"
+            statusLabel.textColor = .systemGreen
+        case .longBreak:
+            statusLabel.text = "Long Break"
+            statusLabel.textColor = .systemBlue
+        }
         updateTimerLabel()
     }
     
     func switchStatus() {
-        isFocusTime.toggle()
-        timeRemaining = isFocusTime ? focusTime : breakTime
+        if timerState == .focus {
+            cycleCount += 1
+            if cycleCount % 4 == 0 {
+                timerState = .longBreak
+                timeRemaining = longBreakTime
+            }
+            else {
+                timerState = .break
+                timeRemaining = breakTime
+            }
+        }
+        else {
+            timerState = .focus
+            timeRemaining = focusTime
+        }
         updateCircularProgressView()
+        timer?.invalidate()
         startTimer()
     }
     
     func startTimer() {
         timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+        isPomodoroOn = true
     }
     
     @objc func updateTimer() {
@@ -198,7 +241,16 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         let seconds = timeRemaining % 60
         timerLabel.text = String(format: "%02d:%02d", minutes, seconds)
         
-        let progress = CGFloat(timeRemaining) / CGFloat(isFocusTime ? focusTime : breakTime)
+        let totalTime: Int
+        switch timerState {
+        case .focus:
+            totalTime = focusTime
+        case .break:
+            totalTime = breakTime
+        case .longBreak:
+            totalTime = longBreakTime
+        }
+        let progress = CGFloat(timeRemaining) / CGFloat(totalTime)
         circularProgressView.progress = progress
     }
 }

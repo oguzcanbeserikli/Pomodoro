@@ -28,8 +28,12 @@ class CircularProgressView: UIView {
     }
     
     private func setupView() {
-        let circularPath = UIBezierPath(arcCenter: center, radius: 100, startAngle: -(.pi / 2), endAngle: 2 * .pi, clockwise: true)
+        let circularPath = UIBezierPath(arcCenter: CGPoint(x: frame.size.width / 2.0, y: frame.size.height / 2.0),
+                                        radius: 100,
+                                        startAngle: CGFloat(-0.5 * Double.pi),
+                                        endAngle: CGFloat(1.5 * Double.pi), clockwise: true)
         
+    
         backgroundLayer.path = circularPath.cgPath
         backgroundLayer.strokeColor = UIColor.lightGray.cgColor
         backgroundLayer.lineWidth = 10
@@ -44,8 +48,24 @@ class CircularProgressView: UIView {
         layer.addSublayer(progressLayer)
     }
     
-    func updateStrokeColor(isFocusTime: Bool) {
-        let color = isFocusTime ? UIColor.red.cgColor : UIColor.green.cgColor
-        progressLayer.strokeColor = color
+    func updateStrokeColor(for timerState: TimerState) {
+        let color: UIColor
+        switch timerState {
+        case .focus:
+            color = .red
+            progressLayer.strokeColor = color.cgColor
+        case .break:
+            color = .green
+            progressLayer.strokeColor = color.cgColor
+        case .longBreak:
+            color = .blue
+            progressLayer.strokeColor = color.cgColor
+        }
     }
+}
+
+enum TimerState{
+    case focus
+    case `break`
+    case longBreak
 }
