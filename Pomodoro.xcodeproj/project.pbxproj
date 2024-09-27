@@ -14,6 +14,7 @@
 		B192C5F52CA2C636000E9256 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B192C5F42CA2C636000E9256 /* Assets.xcassets */; };
 		B192C5F82CA2C636000E9256 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = B192C5F72CA2C636000E9256 /* Base */; };
 		B192C6002CA2C68B000E9256 /* HomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = B192C5FF2CA2C68B000E9256 /* HomeVC.swift */; };
+		B1FFE7A62CA6F7E70057A90D /* alert.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B1FFE7A52CA6F7E70057A90D /* alert.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		B192C5F72CA2C636000E9256 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B192C5F92CA2C636000E9256 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B192C5FF2CA2C68B000E9256 /* HomeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeVC.swift; sourceTree = "<group>"; };
+		B1FFE7A52CA6F7E70057A90D /* alert.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = alert.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 		B192C5EA2CA2C633000E9256 /* Pomodoro */ = {
 			isa = PBXGroup;
 			children = (
+				B1FFE7A42CA6F7DD0057A90D /* AlertSound */,
 				B192C5EB2CA2C633000E9256 /* AppDelegate.swift */,
 				B192C5ED2CA2C633000E9256 /* SceneDelegate.swift */,
 				B192C5FF2CA2C68B000E9256 /* HomeVC.swift */,
@@ -68,6 +71,14 @@
 				B12BE38E2CA3110400EB05E2 /* CircularProgressView.swift */,
 			);
 			path = Pomodoro;
+			sourceTree = "<group>";
+		};
+		B1FFE7A42CA6F7DD0057A90D /* AlertSound */ = {
+			isa = PBXGroup;
+			children = (
+				B1FFE7A52CA6F7E70057A90D /* alert.mp3 */,
+			);
+			path = AlertSound;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -130,6 +141,7 @@
 			files = (
 				B192C5F52CA2C636000E9256 /* Assets.xcassets in Resources */,
 				B192C5F82CA2C636000E9256 /* Base in Resources */,
+				B1FFE7A62CA6F7E70057A90D /* alert.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,6 +303,8 @@
 				DEVELOPMENT_TEAM = AQTR45PN28;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Pomodoro/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Focus Cycle";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -319,6 +333,8 @@
 				DEVELOPMENT_TEAM = AQTR45PN28;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Pomodoro/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Focus Cycle";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

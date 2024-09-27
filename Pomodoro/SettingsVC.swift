@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 protocol SliderValueChangedDelegate {
     func didValueChanged(focusTime: Int, breakTime: Int, longBreakTime: Int)
@@ -41,8 +42,8 @@ class SettingsVC: UIViewController {
     
     let focusSlider: UISlider = {
         let slider = UISlider()
-        slider.minimumValue = 15
-        slider.maximumValue = 30
+        slider.minimumValue = 10
+        slider.maximumValue = 40
         slider.addTarget(self, action: #selector(focusSliderChanged(_:)), for: .valueChanged)
         slider.minimumTrackTintColor = .systemRed
         return slider
@@ -51,7 +52,7 @@ class SettingsVC: UIViewController {
     let breakSlider: UISlider = {
         let slider = UISlider()
         slider.minimumValue = 5
-        slider.maximumValue = 15
+        slider.maximumValue = 20
         slider.addTarget(self, action: #selector(breakSliderChanged(_:)), for: .valueChanged)
         slider.minimumTrackTintColor = .systemGreen
         return slider
@@ -70,11 +71,17 @@ class SettingsVC: UIViewController {
     var currentFocusTime: Int = 25
     var currentBreakTime: Int = 10
     var currentLongBreakTime: Int = 20
+    var tableView = UITableView()
+    let sections = ["Share & Comment", "Terms of Service", "Privacy Policy"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        
+        setupTableView()
+        aboutSlider()
+    }
+    
+    func aboutSlider() {
         focusSlider.value = Float(currentFocusTime)
         focusValueLabel.text = "Focus Time: \(currentFocusTime) min"
         
@@ -93,9 +100,26 @@ class SettingsVC: UIViewController {
         longBreakSlider.isEnabled = !isPomodoroOn
     }
     
+    func setupTableView() {
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tableView)
+        
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: longBreakValueLabel.bottomAnchor, constant: 45),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SettingsCell")
+    }
+    
     func setupUI() {
         view.backgroundColor = .black
         title = "Settings"
+        self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.systemRed]
         
         focusSlider.translatesAutoresizingMaskIntoConstraints = false
         breakSlider.translatesAutoresizingMaskIntoConstraints = false
@@ -157,5 +181,56 @@ class SettingsVC: UIViewController {
         let breakTime = Int(breakSlider.value)
         longBreakValueLabel.text = "Long Break Time: \(longBreakTime) min"
         delegate?.didValueChanged(focusTime: focusTime, breakTime: breakTime, longBreakTime: longBreakTime)
+    }
+    
+    func shareAndComment() {
+        if let url = URL(string: "https://apps.apple.com/us/app/focus-cycle/id6723672321") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    func showTermsOfService() {
+        if let url = URL(string: "https://www.apple.com/legal/internet-services/itunes/") {
+            let safariVC = SFSafariViewController(url: url)
+            present(safariVC, animated: true)
+        }
+    }
+    
+    func showPrivacyPolicy() {
+        if let url = URL(string: "https://www.termsfeed.com/live/63110042-4014-48e1-906b-61ac1ca4ef33") {
+            let safariVC = SFSafariViewController(url: url)
+            present(safariVC, animated: true)
+        }
+    }
+}
+
+extension SettingsVC: UITableViewDelegate, UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return sections.count
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath)
+        cell.textLabel?.text = NSLocalizedString(sections[indexPath.section], comment: "")
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        switch indexPath.section {
+        case 0:
+            shareAndComment()
+        case 1:
+            showTermsOfService()
+        case 2:
+            showPrivacyPolicy()
+        default:
+            break
+        }
     }
 }

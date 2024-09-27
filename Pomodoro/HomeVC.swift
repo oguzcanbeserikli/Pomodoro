@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class HomeVC: UIViewController, SliderValueChangedDelegate {
     let circularProgressView = CircularProgressView()
@@ -71,19 +72,30 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         resetTimer()
     }
     
+    let imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "logo1")
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
+    var audioPlayer: AVAudioPlayer?
+    var audioSession: AVAudioSession?
     var timer: Timer?
+    var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+    var backgroundTimeRemaining: TimeInterval = 0
     var timerState: TimerState = .focus
-    var timeRemaining = 25 * 60
-    var focusTime = 25 * 60
-    var breakTime = 10 * 60
-    var longBreakTime = 20 * 60
+    var timeRemaining = 25 //* 60
+    var focusTime = 25 //* 60
+    var breakTime = 10 //* 60
+    var longBreakTime = 20 //* 60
     var cycleCount = 0
     var isPomodoroOn = false
     
     func didValueChanged(focusTime: Int, breakTime: Int, longBreakTime: Int) {
-        self.focusTime = focusTime * 60
-        self.breakTime = breakTime * 60
-        self.longBreakTime = longBreakTime * 60
+        self.focusTime = focusTime //* 60
+        self.breakTime = breakTime //* 60
+        self.longBreakTime = longBreakTime// * 60
         
         switch timerState {
         case .focus:
@@ -110,8 +122,33 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     }
     
     func setupTitle() {
-        self.title = "Focus Cycle"
-        self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.red]
+        let titleView = UIView()
+        let titleLabel = UILabel()
+        navigationController?.navigationBar.tintColor = .systemRed
+        
+        titleLabel.text = "Focus Cycle"
+        titleLabel.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        titleLabel.textColor = .systemRed
+        
+        titleView.addSubview(imageView)
+        titleView.addSubview(titleLabel)
+        
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            imageView.leadingAnchor.constraint(equalTo: titleView.leadingAnchor),
+            imageView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor),
+            imageView.widthAnchor.constraint(equalToConstant: 24),
+            imageView.heightAnchor.constraint(equalToConstant: 24),
+            
+            titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8),
+            titleLabel.centerYAnchor.constraint(equalTo: titleView.centerYAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: titleView.trailingAnchor)
+        ])
+        
+        titleView.frame = CGRect(x: 0, y: 0, width: 150, height: 40)
+        navigationItem.titleView = titleView
     }
     
     func createRightBarButtonItem() {
@@ -218,12 +255,22 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         }
         updateCircularProgressView()
         timer?.invalidate()
+        playAlert()
         startTimer()
     }
     
     func startTimer() {
+        endBackgroundTask()
+        
+        backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
+            self?.endBackgroundTask()
+        }
+        
         timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+        RunLoop.current.add(timer!, forMode: .common)
         isPomodoroOn = true
+        
+        backgroundTimeRemaining = UIApplication.shared.backgroundTimeRemaining
     }
     
     @objc func updateTimer() {
@@ -252,5 +299,29 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         }
         let progress = CGFloat(timeRemaining) / CGFloat(totalTime)
         circularProgressView.progress = progress
+    }
+    
+    func playAlert() {
+        do {
+            audioSession = AVAudioSession.sharedInstance()
+            try audioSession?.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
+            try audioSession?.setActive(true)
+            
+            guard let url = Bundle.main.url(forResource: "alert", withExtension: "mp3") else {
+                print("Sound file not found.")
+                return
+            }
+            
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.play()
+        } catch let error {
+            print("Error setting up audio session or playing sound: \(error.localizedDescription)")
+        }
+    }
+    
+    func endBackgroundTask() {
+        UIApplication.shared.endBackgroundTask(backgroundTask)
+        backgroundTask = .invalid
     }
 }
