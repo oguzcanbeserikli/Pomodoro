@@ -85,17 +85,17 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     var backgroundTimeRemaining: TimeInterval = 0
     var timerState: TimerState = .focus
-    var timeRemaining = 25 //* 60
-    var focusTime = 25 //* 60
-    var breakTime = 10 //* 60
-    var longBreakTime = 20 //* 60
+    var timeRemaining = 25 * 60
+    var focusTime = 25 * 60
+    var breakTime = 10 * 60
+    var longBreakTime = 20 * 60
     var cycleCount = 0
     var isPomodoroOn = false
     
     func didValueChanged(focusTime: Int, breakTime: Int, longBreakTime: Int) {
-        self.focusTime = focusTime //* 60
-        self.breakTime = breakTime //* 60
-        self.longBreakTime = longBreakTime// * 60
+        self.focusTime = focusTime * 60
+        self.breakTime = breakTime * 60
+        self.longBreakTime = longBreakTime * 60
         
         switch timerState {
         case .focus:
