@@ -58,6 +58,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         startButton.setTitle("Resume", for: .normal)
         startButton.isHidden = false
         pauseButton.isHidden = true
+        stopSound()
     }
     
     let resetButton: UIButton = {
@@ -70,6 +71,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     
     @objc func resetButtonTapped() {
         resetTimer()
+        stopSound()
     }
     
     let imageView: UIImageView = {
@@ -85,16 +87,17 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     var backgroundTimeRemaining: TimeInterval = 0
     var timerState: TimerState = .focus
-    var timeRemaining = 25 * 60
-    var focusTime = 25 * 60
-    var breakTime = 10 * 60
+    var timeRemaining = 25 //* 60
+    var focusTime = 25 //* 60
+    var breakTime = 10 //* 60
     var longBreakTime = 20 * 60
     var cycleCount = 0
     var isPomodoroOn = false
+    var selectedSound: String?
     
     func didValueChanged(focusTime: Int, breakTime: Int, longBreakTime: Int) {
-        self.focusTime = focusTime * 60
-        self.breakTime = breakTime * 60
+        self.focusTime = focusTime //* 60
+        self.breakTime = breakTime //* 60
         self.longBreakTime = longBreakTime * 60
         
         switch timerState {
@@ -119,6 +122,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         startButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
         pauseButton.addTarget(self, action: #selector(pauseButtonTapped), for: .touchUpInside)
         resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
+        setupAudioSession()
     }
     
     func setupTitle() {
@@ -153,9 +157,35 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     
     func createRightBarButtonItem() {
         let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(settingsButtonTapped))
+        let soundButton = UIBarButtonItem(image: UIImage(systemName: "speaker.wave.2.fill"), style: .plain, target: self, action: #selector(soundButtonTapped))
         settingsButton.tintColor = .systemRed
-        navigationItem.rightBarButtonItems = [settingsButton]
+        navigationItem.rightBarButtonItems = [settingsButton, soundButton]
     }
+    
+    @objc func soundButtonTapped() {
+        let alert = UIAlertController(title: "Select Sound", message: nil, preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Rain", style: .default, handler: { _ in
+            self.selectedSound = "Rain"
+        }))
+        alert.addAction(UIAlertAction(title: "Birds", style: .default, handler: { _ in
+            self.selectedSound = "Bird"
+        }))
+        alert.addAction(UIAlertAction(title: "Fireplace", style: .default, handler: { _ in
+            self.selectedSound = "Fireplace"
+        }))
+        alert.addAction(UIAlertAction(title: "Sea Waves", style: .default, handler: { _ in
+            self.selectedSound = "Sea Waves"
+        }))
+        alert.addAction(UIAlertAction(title: "Clear Sound", style: .destructive, handler: { _ in
+            self.selectedSound = nil
+            self.stopSound()
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
     
     @objc func settingsButtonTapped() {
         let settingsVC = SettingsVC()
@@ -271,6 +301,13 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         isPomodoroOn = true
         
         backgroundTimeRemaining = UIApplication.shared.backgroundTimeRemaining
+        
+        if timerState == .focus {
+            playSound()
+        } else {
+            stopSound()
+            playAlert()
+        }
     }
     
     @objc func updateTimer() {
@@ -323,5 +360,43 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     func endBackgroundTask() {
         UIApplication.shared.endBackgroundTask(backgroundTask)
         backgroundTask = .invalid
+    }
+    
+    func playSound() {
+        guard let soundName = selectedSound else {
+            print("No sound selected.")
+            return
+        }
+        
+        if let soundURL = Bundle.main.url(forResource: soundName, withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.numberOfLoops = -1
+                audioPlayer?.play()
+                print("Playing sound: \(soundName)")
+            } catch {
+                print("Failed to play sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Sound file not found: \(soundName)")
+        }
+    }
+    
+    func stopSound() {
+        if let player = audioPlayer, player.isPlaying {
+            player.stop()
+            print("Sound stopped.")
+        } else {
+            print("No sound is currently playing.")
+        }
+    }
+    
+    func setupAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Failed to set up audio session: \(error.localizedDescription)")
+        }
     }
 }
