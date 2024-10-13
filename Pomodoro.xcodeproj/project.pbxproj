@@ -11,6 +11,7 @@
 		B12851812CBA6D410070E28D /* Rain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B12851802CBA6D410070E28D /* Rain.mp3 */; };
 		B12851832CBA6D650070E28D /* Fireplace.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B12851822CBA6D650070E28D /* Fireplace.mp3 */; };
 		B12851852CBA6D6E0070E28D /* Sea Waves.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B12851842CBA6D6E0070E28D /* Sea Waves.mp3 */; };
+		B12851892CBA9FB40070E28D /* silence.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B12851882CBA9FB40070E28D /* silence.mp3 */; };
 		B12BE38D2CA306C000EB05E2 /* SettingsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12BE38C2CA306C000EB05E2 /* SettingsVC.swift */; };
 		B12BE38F2CA3110400EB05E2 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12BE38E2CA3110400EB05E2 /* CircularProgressView.swift */; };
 		B192C5EC2CA2C633000E9256 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B192C5EB2CA2C633000E9256 /* AppDelegate.swift */; };
@@ -26,6 +27,7 @@
 		B12851802CBA6D410070E28D /* Rain.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Rain.mp3; sourceTree = "<group>"; };
 		B12851822CBA6D650070E28D /* Fireplace.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Fireplace.mp3; sourceTree = "<group>"; };
 		B12851842CBA6D6E0070E28D /* Sea Waves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Sea Waves.mp3"; sourceTree = "<group>"; };
+		B12851882CBA9FB40070E28D /* silence.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = silence.mp3; sourceTree = "<group>"; };
 		B12BE38C2CA306C000EB05E2 /* SettingsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVC.swift; sourceTree = "<group>"; };
 		B12BE38E2CA3110400EB05E2 /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		B192C5E82CA2C633000E9256 /* Pomodoro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pomodoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +90,7 @@
 				B128517E2CBA6D390070E28D /* Bird.mp3 */,
 				B12851802CBA6D410070E28D /* Rain.mp3 */,
 				B12851822CBA6D650070E28D /* Fireplace.mp3 */,
+				B12851882CBA9FB40070E28D /* silence.mp3 */,
 				B12851842CBA6D6E0070E28D /* Sea Waves.mp3 */,
 			);
 			path = AlertSound;
@@ -155,6 +158,7 @@
 				B192C5F52CA2C636000E9256 /* Assets.xcassets in Resources */,
 				B12851852CBA6D6E0070E28D /* Sea Waves.mp3 in Resources */,
 				B192C5F82CA2C636000E9256 /* Base in Resources */,
+				B12851892CBA9FB40070E28D /* silence.mp3 in Resources */,
 				B12851812CBA6D410070E28D /* Rain.mp3 in Resources */,
 				B1FFE7A62CA6F7E70057A90D /* alert.mp3 in Resources */,
 				B128517F2CBA6D3A0070E28D /* Bird.mp3 in Resources */,

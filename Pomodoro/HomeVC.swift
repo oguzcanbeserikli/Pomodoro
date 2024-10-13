@@ -84,20 +84,18 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     var audioPlayer: AVAudioPlayer?
     var audioSession: AVAudioSession?
     var timer: Timer?
-    var backgroundTask: UIBackgroundTaskIdentifier = .invalid
-    var backgroundTimeRemaining: TimeInterval = 0
     var timerState: TimerState = .focus
-    var timeRemaining = 25 //* 60
-    var focusTime = 25 //* 60
-    var breakTime = 10 //* 60
+    var timeRemaining = 25 * 60
+    var focusTime = 25 * 60
+    var breakTime = 10 * 60
     var longBreakTime = 20 * 60
     var cycleCount = 0
     var isPomodoroOn = false
-    var selectedSound: String?
+    var selectedSound = "silence"
     
     func didValueChanged(focusTime: Int, breakTime: Int, longBreakTime: Int) {
-        self.focusTime = focusTime //* 60
-        self.breakTime = breakTime //* 60
+        self.focusTime = focusTime * 60
+        self.breakTime = breakTime * 60
         self.longBreakTime = longBreakTime * 60
         
         switch timerState {
@@ -178,8 +176,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
             self.selectedSound = "Sea Waves"
         }))
         alert.addAction(UIAlertAction(title: "Clear Sound", style: .destructive, handler: { _ in
-            self.selectedSound = nil
-            self.stopSound()
+            self.selectedSound = "silence"
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
@@ -290,17 +287,9 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     }
     
     func startTimer() {
-        endBackgroundTask()
-        
-        backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
-            self?.endBackgroundTask()
-        }
-        
         timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
         RunLoop.current.add(timer!, forMode: .common)
         isPomodoroOn = true
-        
-        backgroundTimeRemaining = UIApplication.shared.backgroundTimeRemaining
         
         if timerState == .focus {
             playSound()
@@ -357,28 +346,21 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         }
     }
     
-    func endBackgroundTask() {
-        UIApplication.shared.endBackgroundTask(backgroundTask)
-        backgroundTask = .invalid
-    }
-    
     func playSound() {
-        guard let soundName = selectedSound else {
-            print("No sound selected.")
-            return
-        }
-        
-        if let soundURL = Bundle.main.url(forResource: soundName, withExtension: "mp3") {
+        if let soundURL = Bundle.main.url(forResource: selectedSound, withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
                 audioPlayer?.numberOfLoops = -1
+                if selectedSound == "silence" {
+                    audioPlayer?.volume = 0
+                }
                 audioPlayer?.play()
-                print("Playing sound: \(soundName)")
+                print("Playing sound: \(selectedSound)")
             } catch {
                 print("Failed to play sound: \(error.localizedDescription)")
             }
         } else {
-            print("Sound file not found: \(soundName)")
+            print("Sound file not found: \(selectedSound)")
         }
     }
     
