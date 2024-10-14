@@ -265,6 +265,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     }
     
     func switchStatus() {
+        stopSound()
         if timerState == .focus {
             cycleCount += 1
             if cycleCount % 4 == 0 {
@@ -282,8 +283,9 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         }
         updateCircularProgressView()
         timer?.invalidate()
-        playAlert()
-        startTimer()
+        playAlert {
+            self.startTimer()
+        }
     }
     
     func startTimer() {
@@ -291,11 +293,14 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         RunLoop.current.add(timer!, forMode: .common)
         isPomodoroOn = true
         
+        playBackgroundAudio()
+    }
+    
+    func playBackgroundAudio() {
         if timerState == .focus {
-            playSound()
+            playSelectedOrSilentSound()
         } else {
-            stopSound()
-            playAlert()
+            playSilentSound()
         }
     }
     
@@ -327,7 +332,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
         circularProgressView.progress = progress
     }
     
-    func playAlert() {
+    func playAlert(completion: @escaping () -> Void) {
         do {
             audioSession = AVAudioSession.sharedInstance()
             try audioSession?.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
@@ -341,8 +346,35 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.prepareToPlay()
             audioPlayer?.play()
+            DispatchQueue.main.asyncAfter(deadline: .now() + audioPlayer!.duration) {
+                completion()
+            }
         } catch let error {
             print("Error setting up audio session or playing sound: \(error.localizedDescription)")
+        }
+    }
+    
+    func playSelectedOrSilentSound() {
+        if selectedSound != "silence" {
+            playSound()
+        } else {
+            playSilentSound()
+        }
+    }
+    
+    func playSilentSound() {
+        if let soundURL = Bundle.main.url(forResource: "silence", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.numberOfLoops = -1
+                audioPlayer?.volume = 0
+                audioPlayer?.play()
+                print("Playing silent sound")
+            } catch {
+                print("Failed to play silent sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Silent sound file not found")
         }
     }
     
@@ -351,9 +383,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
                 audioPlayer?.numberOfLoops = -1
-                if selectedSound == "silence" {
-                    audioPlayer?.volume = 0
-                }
+                audioPlayer?.volume = 1
                 audioPlayer?.play()
                 print("Playing sound: \(selectedSound)")
             } catch {
@@ -361,6 +391,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
             }
         } else {
             print("Sound file not found: \(selectedSound)")
+            playSilentSound()
         }
     }
     
@@ -375,7 +406,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     
     func setupAudioSession() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers, .defaultToSpeaker])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Failed to set up audio session: \(error.localizedDescription)")
