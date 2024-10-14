@@ -335,7 +335,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     func playAlert(completion: @escaping () -> Void) {
         do {
             audioSession = AVAudioSession.sharedInstance()
-            try audioSession?.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
+            try audioSession?.setCategory(.playback, mode: .default, options: .mixWithOthers)
             try audioSession?.setActive(true)
             
             guard let url = Bundle.main.url(forResource: "alert", withExtension: "mp3") else {
@@ -406,7 +406,7 @@ class HomeVC: UIViewController, SliderValueChangedDelegate {
     
     func setupAudioSession() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers, .defaultToSpeaker])
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .mixWithOthers)
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Failed to set up audio session: \(error.localizedDescription)")
